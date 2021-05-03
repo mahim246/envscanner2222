@@ -45,7 +45,7 @@ jobs:
         run: |
           sitelist=${{ matrix.chklist }}
           if [ -f "list/${sitelist}" ]; then
-            timeout 30m python3 main.py ${sitelist} ${{ 1310288009:AAEjL-L0-7x_J20MzWLsSjqKFfqd2AUMvqc }} ${{ ShadowAshborn }}
+            timeout 30m python3 main.py ${sitelist} ${{ secrets.API }} ${{ secrets.CHNL }}
           else
             echo "Skipping......"
           fi
